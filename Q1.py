@@ -2,49 +2,104 @@ import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 from itertools import combinations
+import numpy as np
 
-# Step 1: Load data
+# Load data
 scientists_df = pd.read_csv('./output/scientists_cleaned.csv')
 papers_df = pd.read_csv('./output/papers_cleaned.csv')
 
-# Step 2: Normalize names
+# Normalize names
 input_names = set(scientists_df['name'].str.lower().str.strip())
 
-def is_valid_collab(authors):
+# Filter valid authors in papers
+def filter_authors(authors):
     try:
-        authors = [a.lower().strip() for a in eval(authors)]  # safe since we generated the file
+        authors = [a.lower().strip() for a in authors.split(',')]  # Handle comma-separated string
         return [a for a in authors if a in input_names]
-    except:
+    except Exception as e:
+        print(f"Error processing authors: {e}")
         return []
 
-papers_df['valid_authors'] = papers_df['authors_list'].apply(is_valid_collab)
+papers_df['valid_authors'] = papers_df['Authors'].apply(filter_authors)
+# Debug print to see how many valid authors each paper has
+print(papers_df[['Title', 'valid_authors']].head())
 papers_df = papers_df[papers_df['valid_authors'].apply(len) >= 2]
 
-# Step 3: Build collaboration graph
+# Build graph
 G = nx.Graph()
 G.add_nodes_from(input_names)
 
 for _, row in papers_df.iterrows():
-    authors = row['valid_authors']
-    for a1, a2 in combinations(authors, 2):
+    for a1, a2 in combinations(row['valid_authors'], 2):
         if G.has_edge(a1, a2):
             G[a1][a2]['weight'] += 1
         else:
             G.add_edge(a1, a2, weight=1)
 
-# Step 4: Analyze graph
-print("\n Network Statistics:")
-print(f"🔹 Number of nodes (scientists): {G.number_of_nodes()}")
-print(f"🔹 Number of edges (collaborations): {G.number_of_edges()}")
-print(f"🔹 Average degree: {sum(dict(G.degree()).values()) / G.number_of_nodes():.2f}")
-print(f"🔹 Density: {nx.density(G):.4f}")
-print(f"🔹 Average clustering coefficient: {nx.average_clustering(G):.4f}")
-print(f"🔹 Number of connected components: {nx.number_connected_components(G)}")
-
-# Step 5: Optional: Draw the graph
-plt.figure(figsize=(12, 10))
-pos = nx.spring_layout(G, seed=42)
-nx.draw(G, pos, with_labels=True, node_color='lightblue', edge_color='gray', node_size=500, font_size=8)
-plt.title("Collaboration Network of Data Scientists", fontsize=14)
+# Figure 1: Degree Distribution
+degrees = [deg for node, deg in G.degree()]
+plt.figure(figsize=(8, 6))
+plt.hist(degrees, bins=50, color='skyblue', edgecolor='black')
+plt.title("Figure 1: Degree Distribution of the Collaboration Network")
+plt.xlabel("Degree")
+plt.ylabel("Frequency")
+plt.grid(True)
 plt.tight_layout()
-plt.show()
+plt.savefig("figure1_degree_distribution.png")
+plt.close()
+
+# Figure 2: Giant Component
+giant_component = max(nx.connected_components(G), key=len)
+G_giant = G.subgraph(giant_component)
+
+plt.figure(figsize=(12, 10))
+pos = nx.spring_layout(G_giant, seed=42)
+nx.draw(G_giant, pos, node_size=20, edge_color='gray', node_color='skyblue', with_labels=False)
+plt.title("Figure 2: Giant Component of the Collaboration Network")
+plt.tight_layout()
+plt.savefig("figure2_giant_component.png")
+plt.close()
+
+# Figure 3: Largest Clique
+cliques = list(nx.find_cliques(G))
+largest_clique = max(cliques, key=len)
+G_clique = G.subgraph(largest_clique)
+
+plt.figure(figsize=(8, 6))
+pos = nx.circular_layout(G_clique)
+nx.draw(G_clique, pos, with_labels=True, node_color='orange', edge_color='black', node_size=300, font_size=8)
+plt.title(f"Figure 3: Largest Clique in the Network (n={len(largest_clique)})")
+plt.tight_layout()
+plt.savefig("figure3_largest_clique.png")
+plt.close()
+
+# Figure 4: Degree Centrality vs Degree
+degree_centrality = nx.degree_centrality(G)
+degrees_dict = dict(G.degree())
+x = list(degrees_dict.values())
+y = [degree_centrality[node] for node in degrees_dict]
+
+plt.figure(figsize=(8, 6))
+plt.scatter(x, y, color='green', alpha=0.6)
+plt.title("Figure 4: Degree Centrality vs Degree")
+plt.xlabel("Degree")
+plt.ylabel("Degree Centrality")
+plt.grid(True)
+plt.tight_layout()
+plt.savefig("figure4_degree_vs_centrality.png")
+plt.close()
+
+# Figure 5: Degree Centrality vs Betweenness Centrality
+betweenness_centrality = nx.betweenness_centrality(G)
+x = [degree_centrality[node] for node in G.nodes()]
+y = [betweenness_centrality[node] for node in G.nodes()]
+
+plt.figure(figsize=(8, 6))
+plt.scatter(x, y, color='purple', alpha=0.6)
+plt.title("Figure 5: Degree Centrality vs Betweenness Centrality")
+plt.xlabel("Degree Centrality")
+plt.ylabel("Betweenness Centrality")
+plt.grid(True)
+plt.tight_layout()
+plt.savefig("figure5_degree_vs_betweenness.png")
+plt.close()
