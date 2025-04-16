@@ -8,7 +8,7 @@ os.makedirs(output_dir, exist_ok=True)
 log = []  # Collect logs here
 
 # Load the CSV
-papers_df = pd.read_csv("./output/papers_cleaned.csv")
+papers_df = pd.read_csv("./output/papers.csv")
 log.append(f"Initial shape: {papers_df.shape[0]} rows, {papers_df.shape[1]} columns")
 
 # Step 1: Remove exact duplicate rows
@@ -41,7 +41,7 @@ log.append(f"Rows with any missing (NaN) or empty strings: {partially_empty.sum(
 log.append(f"Final shape after cleaning: {papers_df.shape[0]} rows")
 
 # Save cleaned file
-cleaned_path = os.path.join(output_dir, "papers_cleaned_final.csv")
+cleaned_path = os.path.join(output_dir, "papers_cleaned.csv")
 papers_df.to_csv(cleaned_path, index=False)
 log.append(f"Cleaned data saved to '{cleaned_path}'")
 
