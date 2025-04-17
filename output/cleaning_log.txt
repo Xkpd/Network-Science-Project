@@ -1,0 +1,9 @@
+Initial shape: 67675 rows, 5 columns
+Total exact duplicate rows: 6687
+- Duplicate entries in "Title": 20634
+Missing (NaN) values per column:
+  - DOI: 6786
+Empty string entries per column:
+Rows with any missing (NaN) or empty strings: 6786
+Final shape after cleaning: 49543 rows
+Cleaned data saved to 'output\papers_cleaned.csv'
