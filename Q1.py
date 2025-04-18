@@ -36,6 +36,15 @@ for _, row in papers_df.iterrows():
         else:
             G.add_edge(a1, a2, weight=1)
 
+# Network properties
+print("=== Network Properties ===")
+print(f"Total Nodes (in input list): {G.number_of_nodes()}")
+print(f"Total Edges: {G.number_of_edges()}")
+print(f"Average Degree: {np.mean([deg for _, deg in G.degree()]):.2f}")
+print(f"Network Density: {nx.density(G):.4f}")
+print(f"Number of Connected Components: {nx.number_connected_components(G)}")
+print(f"Average Clustering Coefficient: {nx.average_clustering(G):.4f}")
+
 # Figure 1: Degree Distribution
 degrees = [deg for node, deg in G.degree()]
 plt.figure(figsize=(8, 6))
@@ -52,10 +61,19 @@ plt.close()
 giant_component = max(nx.connected_components(G), key=len)
 G_giant = G.subgraph(giant_component)
 
+print("\n=== Giant Component Properties ===")
+print(f"Nodes in Giant Component: {G_giant.number_of_nodes()}")
+print(f"Edges in Giant Component: {G_giant.number_of_edges()}")
+if nx.is_connected(G_giant):
+    print(f"Diameter: {nx.diameter(G_giant)}")
+    print(f"Average Shortest Path Length: {nx.average_shortest_path_length(G_giant):.2f}")
+else:
+    print("Giant component is not fully connected (unexpected).")
+
 plt.figure(figsize=(12, 10))
 pos = nx.spring_layout(G_giant, seed=42)
 nx.draw(G_giant, pos, node_size=20, edge_color='gray', node_color='skyblue', with_labels=False)
-plt.title("Figure 2: Giant Component of the Collaboration Network")
+plt.title(f"Figure 2: Giant Component ({G_giant.number_of_nodes()} nodes, {G_giant.number_of_edges()} edges)")
 plt.tight_layout()
 plt.savefig("figure2_giant_component.png")
 plt.close()
