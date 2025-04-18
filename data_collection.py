@@ -88,8 +88,13 @@ def scrape_scientist(row):
             if year_tag:
                 year = year_tag.text.strip()
             else:
-                year_match = re.search(r'(\b20\d{2}\b|\b19\d{2}\b)', entry.text)
-                year = year_match.group(1) if year_match else 'N/A'
+                year_matches = re.findall(r'\b(19\d{2}|20\d{2})\b', entry.text)
+                valid_years = [int(y) for y in year_matches if int(y) <= 2025]
+                if not valid_years:
+                    with open("missing_year_fallback.txt", "a", encoding="utf-8") as log_file:
+                        log_file.write(f"No valid year for entry in {pid}:\n{entry.text[:300]}\n\n")
+                year = str(max(valid_years)) if valid_years else 'N/A'
+
 
             doi_tag = entry.find('a', href=re.compile(r'(doi\.org|arxiv\.org)'))
             doi = doi_tag['href'].strip() if doi_tag else 'N/A'
