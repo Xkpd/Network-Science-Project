@@ -29,15 +29,33 @@ else:
     errors_links = []
 
     for link in tqdm(initial_df['dblp']):
-        while True:
-            response = requests.get(link)
-            if response.status_code == 429:
-                print('Too many requests. Sleeping for 60 seconds...')
-                time.sleep(60)
-            else:
-                break
+        retries = 5
+        delay = 2
+        response = None
+        for attempt in range(retries):
+            try:
+                response = requests.get(link, timeout=10)
+                if response.status_code == 429:
+                    print("Too many requests. Sleeping for 60 seconds...")
+                    time.sleep(60)
+                    continue
+                elif response.status_code == 410:
+                    print(f"{link} is gone (410). Skipping.")
+                    response = None
+                    break
+                elif response.status_code != 200:
+                    raise Exception(f"HTTP Error {response.status_code}")
+                break  # success
+            except Exception as e:
+                print(f"Attempt {attempt + 1}/{retries} failed for {link}: {e}")
+                if attempt < retries - 1:
+                    time.sleep(delay)
+                    delay *= 2
+                else:
+                    print(f"Skipping {link} after {retries} failed attempts.")
+                    response = None
 
-        if response.status_code != 200:
+        if response is None:
             pids.append('Error')
             final_urls.append('Error')
             errors_links.append(link)
@@ -60,6 +78,8 @@ else:
     cleaned_df['pid'] = pids
     cleaned_df['final_url'] = final_urls
     cleaned_df = cleaned_df[(cleaned_df['pid'] != 'Error') & (cleaned_df['final_url'] != 'Error')]
+    cleaned_df = cleaned_df.drop_duplicates(subset='pid', keep='first')
+    cleaned_df = cleaned_df.drop_duplicates()
     cleaned_df.to_csv(scientists_output_file, index=False)
     print(f"Saved {len(cleaned_df)} cleaned scientists to {scientists_output_file}")
     scientists_df = cleaned_df
