@@ -1,5 +1,7 @@
-### this Github consist of all the code and output produced for Network Science Project  
+### This folder consist of all the code and output produced for Network Science Project  
 
+
+Report.pdf is the main analysis and report for this project 
 
 Each question folder corresponds to the ipynb and python files used and the output produced using the code.  
 
