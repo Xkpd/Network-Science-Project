@@ -1,2 +1,0 @@
-rand_total_nodes,rand_num_edges,rand_avg_degree,rand_avg_clustering,rand_num_components,rand_largest_cc_size,rand_avg_shortest_path_length,rand_avg_closeness,rand_max_closeness,rand_max_degree
-39974,439062,21.96737879621754,0.0005623726126628668,1,39974,3.7551813176600963,0.2663590959348063,0.28181754089114497,43
