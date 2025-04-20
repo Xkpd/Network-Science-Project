@@ -5,6 +5,11 @@ Report.pdf is the main analysis and report for this project
 
 Each question folder corresponds to the ipynb and python files used and the output produced using the code.  
 
+Output/output graph folder:  
+- this folder consist of all the output graph used for analysis.
+- the graph generated are classified according to the question  
+
+
 Crawling, Q1, Q4:  
 - ipynb has exactly the same code as the py file, with ipynb showing the output for each step
 
